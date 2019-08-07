@@ -2,7 +2,7 @@
 doc = """tosheets, send stdin to your google sheets
 
 Usage:
-  tosheets -c <cell> [-u] [-k] [-s <sheet>] [--spreadsheet=<spreadsheet>] [--new-sheet=<name>] [-d <delimiter>] [-q <quote char>]
+  tosheets -c <cell> [-u] [-k] [-x] [-s <sheet>] [--spreadsheet=<spreadsheet>] [--new-sheet=<name>] [-d <delimiter>] [-q <quote char>]
   tosheets (-h | --help)
   tosheets --version
 
@@ -11,6 +11,7 @@ Options:
   --version                     Show version.
   -u                            Update CELL(s) instead of appending.
   -k                            Keep fields as they are (do not try to convert int or float).
+  -x                            Export instead of import
   -c CELL                       Start appending to CELL.
   -s SHEET                      Use sheet name SHEET, otherwise tries to use
                                 TOSHEETS_SHEET (default: first visible sheet).
@@ -29,6 +30,8 @@ import os
 import re
 import sys
 import csv
+import pandas as pd
+from StringIO import StringIO
 
 from apiclient import discovery
 from oauth2client import client
@@ -143,6 +146,44 @@ def appendToSheet(values, spreadsheetId, rangeName):
         exit(1)
     exit(0)
 
+def readFromSheet(spreadsheetId, rangeName):
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                    'version=v4')
+    service = discovery.build('sheets', 'v4', http=http,
+                              discoveryServiceUrl=discoveryUrl)
+
+    try:
+        result = service.spreadsheets().values().get(
+            spreadsheetId=spreadsheetId, range=rangeName).execute()
+
+        header = result.get('values',[])[0]
+        values = result.get('values',[])[1:]
+        if not values:
+            print("# No data found.")
+            exit(1)
+        else:
+            all_data = []
+            for col_id, col_name in enumerate(header):
+                column_data = []
+                for row in values:
+                    column_data.append(row[col_id])
+                ds = pd.Series(data=column_data, name=col_name)
+                all_data.append(ds)
+            df = pd.concat(all_data, axis=1)
+            #import pdb; pdb.set_trace()
+            #pass; # args.debug=False
+            output = StringIO()
+            df.to_csv(output,index=False)
+            output.seek(0)
+            print(output.read())
+
+    except Exception as e:
+        print(e)
+        exit(1)
+    exit(0)
+
 def tryToConvert(x):
   try:
      return int(x)
@@ -197,6 +238,12 @@ def main():
     quote = arguments['-q'] or '"'
     keep = arguments['-k']
     reader = csv.reader(sys.stdin, delimiter=separator, quotechar=quote)
+
+    export = arguments['-x']
+    if export is not None:
+        # print("Export function")
+        readFromSheet(spreadsheetId, sheet + cell)
+        exit(0)
 
     values = []
     for line in reader:
