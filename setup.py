@@ -20,6 +20,7 @@ setup(
     install_requires=[
         'docopt',
         'oauth2client',
+        'pandas',
         'google-api-python-client'
     ],
     packages=find_packages(),
