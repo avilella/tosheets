@@ -31,7 +31,8 @@ import re
 import sys
 import csv
 import pandas as pd
-from StringIO import StringIO
+#from StringIO import StringIO
+from io import StringIO
 
 from apiclient import discovery
 from oauth2client import client
