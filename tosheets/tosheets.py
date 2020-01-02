@@ -241,7 +241,7 @@ def main():
     reader = csv.reader(sys.stdin, delimiter=separator, quotechar=quote)
 
     export = arguments['-x']
-    if export is not None:
+    if export is not False:
         # print("Export function")
         readFromSheet(spreadsheetId, sheet + cell)
         exit(0)
