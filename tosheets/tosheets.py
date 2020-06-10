@@ -99,9 +99,37 @@ def newSheet(name):
             'index': 0,
             'sheetId': 0,
             'sheetType': 'GRID',
-            'title': 'tosheets'
+            'title': 'Sheet1'
         }
-    }])
+               },
+               {
+        'properties': {
+            'gridProperties': {'columnCount': 26, 'rowCount': 200},
+            'index': 1,
+            'sheetId': 1,
+            'sheetType': 'GRID',
+            'title': 'Sheet2'
+        }
+               },
+               {
+        'properties': {
+            'gridProperties': {'columnCount': 26, 'rowCount': 200},
+            'index': 2,
+            'sheetId': 2,
+            'sheetType': 'GRID',
+            'title': 'Sheet3'
+        }
+               },
+               {
+        'properties': {
+            'gridProperties': {'columnCount': 26, 'rowCount': 200},
+            'index': 3,
+            'sheetId': 3,
+            'sheetType': 'GRID',
+            'title': 'Sheet4'
+        }
+               }
+    ])
 
     try:
         result = service.spreadsheets().create(body=sheet).execute()
