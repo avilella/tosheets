@@ -99,7 +99,7 @@ def newSheet(name):
             'index': 0,
             'sheetId': 0,
             'sheetType': 'GRID',
-            'title': 'Sheet1'
+            'title': 'metrics'
         }
                },
                {
@@ -108,7 +108,7 @@ def newSheet(name):
             'index': 1,
             'sheetId': 1,
             'sheetType': 'GRID',
-            'title': 'Sheet2'
+            'title': 'isotypes'
         }
                },
                {
@@ -117,7 +117,7 @@ def newSheet(name):
             'index': 2,
             'sheetId': 2,
             'sheetType': 'GRID',
-            'title': 'Sheet3'
+            'title': 'pairs'
         }
                },
                {
@@ -126,7 +126,43 @@ def newSheet(name):
             'index': 3,
             'sheetId': 3,
             'sheetType': 'GRID',
-            'title': 'Sheet4'
+            'title': 'candidates_all'
+        }
+               },
+               {
+        'properties': {
+            'gridProperties': {'columnCount': 26, 'rowCount': 200},
+            'index': 4,
+            'sheetId': 4,
+            'sheetType': 'GRID',
+            'title': 'candidates_dogdog'
+        }
+               },
+               {
+        'properties': {
+            'gridProperties': {'columnCount': 26, 'rowCount': 200},
+            'index': 5,
+            'sheetId': 5,
+            'sheetType': 'GRID',
+            'title': 'candidates_withmouse'
+        }
+               },
+               {
+        'properties': {
+            'gridProperties': {'columnCount': 26, 'rowCount': 200},
+            'index': 6,
+            'sheetId': 6,
+            'sheetType': 'GRID',
+            'title': 'Sheet6'
+        }
+               },
+               {
+        'properties': {
+            'gridProperties': {'columnCount': 26, 'rowCount': 200},
+            'index': 7,
+            'sheetId': 7,
+            'sheetType': 'GRID',
+            'title': 'Sheet7'
         }
                }
     ])
