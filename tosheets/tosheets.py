@@ -2,7 +2,7 @@
 doc = """tosheets, send stdin to your google sheets
 
 Usage:
-  tosheets -c <cell> [-u] [-k] [-x] [-s <sheet>] [--spreadsheet=<spreadsheet>] [--new-sheet=<name>] [-d <delimiter>] [-q <quote char>] [--open] [-i <csv>]
+  tosheets -c <cell> [-u] [-k] [-x] [-a] [-r] [-w] [-s <sheet>] [--spreadsheet=<spreadsheet>] [--new-sheet=<name>] [-d <delimiter>] [-q <quote char>] [--open] [-i <csv>]
   tosheets (-h | --help)
   tosheets --version
 
@@ -13,6 +13,9 @@ Options:
   -u                            Update CELL(s) instead of appending.
   -k                            Keep fields as they are (do not try to convert int or float).
   -x                            Export instead of import
+  -a                            Add new sheet
+  -w                            Wipe sheet clear
+  -r                            Remove sheet
   -c CELL                       Start appending to CELL.
   -s SHEET                      Use sheet name SHEET, otherwise tries to use
                                 TOSHEETS_SHEET (default: first visible sheet).
@@ -123,6 +126,15 @@ def newSheet(name):
                {
         'properties': {
             'gridProperties': {'columnCount': 26, 'rowCount': 200},
+            'index': 8,
+            'sheetId': 8,
+            'sheetType': 'GRID',
+            'title': 'platform_usage'
+        }
+               },
+               {
+        'properties': {
+            'gridProperties': {'columnCount': 26, 'rowCount': 200},
             'index': 3,
             'sheetId': 3,
             'sheetType': 'GRID',
@@ -209,6 +221,56 @@ def appendToSheet(values, spreadsheetId, rangeName):
             range=rangeName,
             valueInputOption='RAW',
             body = {'values': values}).execute()
+    except Exception as e:
+        print(e)
+        exit(1)
+    exit(0)
+
+def wipeSheet(spreadsheetId, sheet, cell):
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                    'version=v4')
+    service = discovery.build('sheets', 'v4', http=http,
+                              discoveryServiceUrl=discoveryUrl)
+
+    try:
+        import pdb; pdb.set_trace()
+        _debug=False; #args.debug=False
+
+        clear_values_request_body = {}
+        result = service.spreadsheets().values().clear(spreadsheetId=spreadsheetId, range=sheet+cell, body=clear_values_request_body).execute()
+
+    except Exception as e:
+        print(e)
+        exit(1)
+    exit(0)
+
+def addSheet(spreadsheetId, sheet):
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                    'version=v4')
+    service = discovery.build('sheets', 'v4', http=http,
+                              discoveryServiceUrl=discoveryUrl)
+
+    try:
+        request_body = {
+            'requests': [{
+                'addSheet': {
+                    'properties': {
+                        'title': sheet[:-1]
+                    }
+                }
+            }]
+        }
+
+        result = service.spreadsheets().batchUpdate(
+            spreadsheetId=spreadsheetId,
+            body=request_body
+        ).execute()
+        print(sheet)
+
     except Exception as e:
         print(e)
         exit(1)
@@ -309,6 +371,18 @@ def main():
     quote = arguments['-q'] or '"'
     keep = arguments['-k']
     reader = csv.reader(sys.stdin, delimiter=separator, quotechar=quote)
+
+    add_sheet = arguments['-a']
+    if add_sheet is not False:
+        # print("Export function")
+        addSheet(spreadsheetId, sheet)
+        exit(0)
+
+    wipe_sheet = arguments['-w']
+    if wipe_sheet is not False:
+        # print("Export function")
+        wipeSheet(spreadsheetId, sheet, cell)
+        exit(0)
 
     export = arguments['-x']
     if export is not False:
