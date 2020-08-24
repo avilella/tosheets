@@ -2,7 +2,7 @@
 doc = """tosheets, send stdin to your google sheets
 
 Usage:
-  tosheets -c <cell> [-u] [-k] [-x] [-a] [-r] [-w] [-s <sheet>] [--spreadsheet=<spreadsheet>] [--new-sheet=<name>] [-d <delimiter>] [-q <quote char>] [--open] [-i <csv>]
+  tosheets -c <cell> [-u] [-k] [-x] [-a] [-r] [-w] [-n <note>] [-s <sheet>] [--spreadsheet=<spreadsheet>] [--new-sheet=<name>] [-d <delimiter>] [-q <quote char>] [--open] [-i <csv>]
   tosheets (-h | --help)
   tosheets --version
 
@@ -13,6 +13,7 @@ Options:
   -u                            Update CELL(s) instead of appending.
   -k                            Keep fields as they are (do not try to convert int or float).
   -x                            Export instead of import
+  -n NOTE                       insert note
   -a                            Add new sheet
   -w                            Wipe sheet clear
   -r                            Remove sheet
@@ -226,6 +227,52 @@ def appendToSheet(values, spreadsheetId, rangeName):
         exit(1)
     exit(0)
 
+def insertNote(this_note, spreadsheetId, sheet, cell):
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                    'version=v4')
+    service = discovery.build('sheets', 'v4', http=http,
+                              discoveryServiceUrl=discoveryUrl)
+
+    try:
+
+        sheet_id = service.spreadsheets().get(spreadsheetId=spreadsheetId,ranges=sheet+"A1").execute().get('sheets')[0].get('properties').get('sheetId')
+        request_body = {
+            'requests': [{
+              'updateCells': {
+                'range': {
+                    'sheetId': sheet_id,
+                    'startRowIndex': 0,
+                    'endRowIndex': 1,
+                    'startColumnIndex': 0,
+                    'endColumnIndex': 1
+                },
+                'rows': [
+                    {
+                        'values': [
+                            {
+                                'note': this_note
+                            }
+                        ]
+                    }
+                ],
+                'fields': 'note'
+            }            }]
+        }
+
+        # import pdb; pdb.set_trace()
+        # _debug=False; #args.debug=False
+        result = service.spreadsheets().batchUpdate(
+            spreadsheetId=spreadsheetId,
+            body=request_body
+        ).execute()
+
+    except Exception as e:
+        print(e)
+        exit(1)
+    exit(0)
+
 def wipeSheet(spreadsheetId, sheet, cell):
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
@@ -235,8 +282,8 @@ def wipeSheet(spreadsheetId, sheet, cell):
                               discoveryServiceUrl=discoveryUrl)
 
     try:
-        import pdb; pdb.set_trace()
-        _debug=False; #args.debug=False
+        # import pdb; pdb.set_trace()
+        # _debug=False; #args.debug=False
 
         clear_values_request_body = {}
         result = service.spreadsheets().values().clear(spreadsheetId=spreadsheetId, range=sheet+cell, body=clear_values_request_body).execute()
@@ -376,6 +423,12 @@ def main():
     if add_sheet is not False:
         # print("Export function")
         addSheet(spreadsheetId, sheet)
+        exit(0)
+
+    this_note = arguments['-n']
+    if this_note is not False:
+        # print("Export function")
+        insertNote(this_note, spreadsheetId, sheet, cell)
         exit(0)
 
     wipe_sheet = arguments['-w']
