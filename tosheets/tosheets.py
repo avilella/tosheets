@@ -426,7 +426,7 @@ def main():
         exit(0)
 
     this_note = arguments['-n']
-    if this_note is not False:
+    if this_note is not None:
         # print("Export function")
         insertNote(this_note, spreadsheetId, sheet, cell)
         exit(0)
